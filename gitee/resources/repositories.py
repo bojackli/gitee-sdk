@@ -91,7 +91,7 @@ class Repositories(Resource):
             has_wiki: 是否启用Wiki (True/False)
             auto_init: 是否自动初始化 (True/False)
             gitignore_template: .gitignore模板
-            license_template: 许可证模板，可选值：mit, apache-2.0, gpl-2.0, gpl-3.0, lgpl-2.1, lgpl-3.0, agpl-3.0, bsd-2-clause, bsd-3-clause, epl-1.0, epl-2.0, mpl-2.0, unlicense
+            license_template: 许可证模板，具体格式要求请参考Gitee API文档：https://gitee.com/api/v5/swagger#/postV5UserRepos
             **kwargs: 其他参数
 
         Returns:
@@ -365,3 +365,21 @@ class Repositories(Resource):
         validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
         data = filter_none_values({"organization": organization, "name": name})
         return self._post(f"/repos/{owner}/{repo}/forks", json=data)
+        
+    def get_raw(
+        self, owner: str, repo: str, path: str, ref: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取仓库原始文件内容。
+
+        Args:
+            owner: 仓库所有者
+            repo: 仓库名称
+            path: 文件路径
+            ref: 分支/标签/提交SHA，默认为默认分支
+
+        Returns:
+            文件原始内容
+        """
+        validate_required_params({"owner": owner, "repo": repo, "path": path}, ["owner", "repo", "path"])
+        params = filter_none_values({"ref": ref})
+        return self._get(f"/repos/{owner}/{repo}/raw/{path}", params=params)

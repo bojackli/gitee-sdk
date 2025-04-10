@@ -42,6 +42,7 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/bojackli/gitee-sdk"
+Source = "https://github.com/bojackli/gitee-sdk"
 Documentation = "https://gitee-sdk.readthedocs.io"
 Issues = "https://github.com/bojackli/gitee-sdk/issues"
 

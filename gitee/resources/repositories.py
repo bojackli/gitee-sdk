@@ -91,7 +91,7 @@ class Repositories(Resource):
             has_wiki: 是否启用Wiki (True/False)
             auto_init: 是否自动初始化 (True/False)
             gitignore_template: .gitignore模板
-            license_template: 许可证模板，具体格式要求请参考Gitee API文档：https://gitee.com/api/v5/swagger#/postV5UserRepos
+            license_template: 许可证模板，具体格式要求请参考Gitee API文档
             **kwargs: 其他参数
 
         Returns:

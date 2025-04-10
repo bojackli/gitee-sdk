@@ -1,9 +1,9 @@
-# Gitee SDK
+# Gitee OpenAPI SDK
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-一个功能完整、结构清晰、易于使用的Gitee API Python SDK，使用uv进行依赖管理。
+一个功能完整、结构清晰、易于使用的Gitee API Python SDK包，使用uv进行依赖管理。
 
 ## 功能特点
 
@@ -18,13 +18,13 @@
 ## 安装
 
 ```bash
-pip install gitee-sdk
+pip install gitee-openapi
 ```
 
 使用uv安装：
 
 ```bash
-uv pip install gitee-sdk
+uv pip install gitee-openapi
 ```
 
 ## 快速开始

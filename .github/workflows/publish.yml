@@ -1,8 +1,8 @@
-name: Publish Python Package to TestPyPI
+name: Publish Python Package
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ dev, main, master ]
   release:
     types: [ created ]
 
@@ -25,9 +25,18 @@ jobs:
         python -c "import re; f=open('pyproject.toml','r+'); s=f.read(); v=re.search(r'version = \"(\d+\.\d+\.\d+)\"', s).group(1); a,b,c=v.split('.'); new_v=f'{a}.{b}.{int(c)+1}'; f.seek(0); f.write(re.sub(r'version = \".+?\"', f'version = \"{new_v}\"', s)); f.truncate(); f.close()"
     - name: Build package
       run: python setup.py sdist bdist_wheel
-    - name: Publish to TestPyPI
+    - name: Publish Package
+      if: github.ref == 'refs/heads/dev'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
       run: |
         twine upload --verbose --repository testpypi dist/*
+        
+    - name: Publish to PyPI
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'release'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        twine upload --verbose dist/*

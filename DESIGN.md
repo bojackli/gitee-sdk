@@ -1,4 +1,4 @@
-# Gitee API SDK 设计文档
+# Gitee OpenAPI SDK 设计文档
 
 ## 1. 项目概述
 

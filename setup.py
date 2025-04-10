@@ -10,7 +10,7 @@ def increment_version():
         return new_version
 
 setup(
-    name="gitee-sdk",
+    name="gitee-openapi",
     version=increment_version(),
     description="Python SDK for Gitee API",
     long_description=open("README.md", encoding="utf-8").read(),

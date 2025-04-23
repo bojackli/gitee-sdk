@@ -101,7 +101,7 @@ class GiteeClient:
         session.headers.update(headers)
         return session
 
-    def _get(self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    def _get(self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
         """发送GET请求。
 
         Args:
@@ -114,7 +114,7 @@ class GiteeClient:
         """
         return self.request("GET", url, params=params, **kwargs)
 
-    def _post(self, url: str, params: Optional[Dict[str, Any]] = None, json: Optional[Dict[str, Any]] = None, data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    def _post(self, url: str, params: Optional[Dict[str, Any]] = None, json: Optional[Dict[str, Any]] = None, data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
         """发送POST请求。
 
         Args:
@@ -137,7 +137,7 @@ class GiteeClient:
         data: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
         """发送HTTP请求并处理响应。
 
         Args:
@@ -149,7 +149,7 @@ class GiteeClient:
             **kwargs: 其他传递给requests.Session.request的参数
 
         Returns:
-            解析后的JSON响应
+            解析后的JSON响应，或者当响应不是有效JSON格式时返回原始字符串内容
 
         Raises:
             GiteeException: 请求过程中发生错误
@@ -190,7 +190,12 @@ class GiteeClient:
             if not response.content or response.status_code == 204:
                 return None
 
-            return response.json()
+            try:
+                return response.json()
+            except ValueError:
+                # 处理非JSON响应
+                logger.debug("Response is not a valid JSON, returning raw content")
+                return response.text
 
         except requests.exceptions.HTTPError as e:
             response = e.response

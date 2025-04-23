@@ -23,6 +23,16 @@ jobs:
     - name: Increment version
       run: |
         python -c "import re; f=open('pyproject.toml','r+'); s=f.read(); v=re.search(r'version = \"(\d+\.\d+\.\d+)\"', s).group(1); a,b,c=v.split('.'); new_v=f'{a}.{b}.{int(c)+1}'; f.seek(0); f.write(re.sub(r'version = \".+?\"', f'version = \"{new_v}\"', s)); f.truncate(); f.close()"
+        echo "NEW_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)" >> $GITHUB_ENV
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+    - name: Commit version update
+      run: |
+        git add pyproject.toml
+        git commit -m "chore: bump version to ${{ env.NEW_VERSION }}"
+        git push
     - name: Build package
       run: python setup.py sdist bdist_wheel
     - name: Publish Package

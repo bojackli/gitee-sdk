@@ -3,6 +3,9 @@ name: Publish Python Package
 on:
   push:
     branches: [ dev, main, master ]
+  pull_request:
+    branches: [ dev, main, master ]
+    types: [ closed ]
   release:
     types: [ created ]
 
@@ -25,6 +28,7 @@ jobs:
         pip install setuptools wheel twine
         
     - name: Increment version
+      if: github.event_name != 'pull_request' || github.event.action != 'closed'
       run: |
         python -c "import re; f=open('pyproject.toml','r+'); s=f.read(); v=re.search(r'version = \"(\d+\.\d+\.\d+)\"', s).group(1); a,b,c=v.split('.'); new_v=f'{a}.{b}.{int(c)+1}'; f.seek(0); f.write(re.sub(r'version = \".+?\"', f'version = \"{new_v}\"', s)); f.truncate(); f.close()"
         VERSION=$(awk -F\" '/^version = / {print $2; exit}' pyproject.toml)

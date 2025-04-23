@@ -1,17 +1,15 @@
 from setuptools import setup, find_packages
 import re
 
-def increment_version():
+def get_version():
     with open('pyproject.toml', 'r') as f:
         content = f.read()
         version = re.search(r'version = "(\d+\.\d+\.\d+)"', content).group(1)
-        a, b, c = version.split('.')
-        new_version = f'{a}.{b}.{int(c)+1}'
-        return new_version
+        return version
 
 setup(
     name="gitee-openapi",
-    version=increment_version(),
+    version=get_version(),
     description="Python SDK for Gitee API",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",

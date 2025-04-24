@@ -28,18 +28,20 @@ jobs:
         pip install setuptools wheel twine
         
     - name: Increment version
-      if: github.event_name != 'pull_request' || github.event.action != 'closed'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
       run: |
         python -c "import re; f=open('pyproject.toml','r+'); s=f.read(); v=re.search(r'version = \"(\d+\.\d+\.\d+)\"', s).group(1); a,b,c=v.split('.'); new_v=f'{a}.{b}.{int(c)+1}'; f.seek(0); f.write(re.sub(r'version = \".+?\"', f'version = \"{new_v}\"', s)); f.truncate(); f.close()"
         VERSION=$(awk -F\" '/^version = / {print $2; exit}' pyproject.toml)
         echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
         
     - name: Configure Git
+      if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
     - name: Commit version changes
+      if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -49,8 +51,8 @@ jobs:
 
     - name: Build package
       run: python setup.py sdist bdist_wheel
-    - name: Publish Package
-      if: github.ref == 'refs/heads/dev'
+    - name: Publish to TestPyPI
+      if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -58,7 +60,7 @@ jobs:
         twine upload --verbose --repository testpypi dist/*
         
     - name: Publish to PyPI
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'release'
+      if: github.event_name == 'release' && github.event.action == 'published'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

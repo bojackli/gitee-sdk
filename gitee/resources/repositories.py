@@ -191,6 +191,21 @@ class Repositories(Resource):
         params = filter_none_values({"page": page, "per_page": per_page})
         return self._get(f"/repos/{owner}/{repo}/branches", params=params)
 
+    def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
+        """获取提交信息。
+
+        Args:
+            owner: 仓库所属用户/组织
+            repo: 仓库名称
+            sha: 提交的SHA值
+
+        Returns:
+            提交信息
+        """
+        validate_required_params({"owner": owner, "repo": repo, "sha": sha},
+                               ["owner", "repo", "sha"])
+        return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
+
     def get_branch(
         self, owner: str, repo: str, branch: str
     ) -> Dict[str, Any]:

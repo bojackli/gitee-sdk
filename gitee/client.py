@@ -16,7 +16,6 @@ from gitee.resources.checks import Checks
 from gitee.resources.emails import Emails
 from gitee.resources.enterprises import Enterprises
 from gitee.resources.gists import Gists
-from gitee.resources.git_data import GitData
 from gitee.resources.issues import Issues
 from gitee.resources.labels import Labels
 from gitee.resources.milestones import Milestones
@@ -76,7 +75,6 @@ class GiteeClient:
         self.webhooks = Webhooks(self)
         self.activities = Activities(self)
         self.checks = Checks(self)
-        self.git_data = GitData(self)
         self.search = Search(self)
         self.misc = Miscellaneous(self)
 

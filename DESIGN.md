@@ -50,6 +50,9 @@ gitee-sdk/
         ├── __init__.py
         ├── base.py         # 基础资源类
         ├── repositories.py # 仓库相关
+        ├── branches.py     # 分支相关
+        ├── commits.py      # 提交相关
+        ├── collaborators.py # 协作者相关
         ├── issues.py       # Issues相关
         ├── pulls.py        # Pull Requests相关
         ├── users.py        # 用户相关
@@ -62,12 +65,19 @@ gitee-sdk/
         ├── webhooks.py     # 钩子相关
         ├── activities.py   # 动态通知相关
         ├── checks.py       # 门禁检查项相关
-        ├── git_data.py     # 仓库数据相关
         ├── search.py       # 搜索相关
-        └── misc.py         # 杂项
+        ├── misc.py         # 杂项
+        └── ...
 ```
 
 ## 4. 核心组件设计
+
+`GiteeClient` owns transport concerns: session setup, authentication headers,
+request dispatch, response parsing, rate-limit checks, and exception mapping.
+`Resource` owns shared SDK helpers such as HTTP verb wrappers, required
+parameter checks, filtered parameter/body construction, and pagination
+construction. Concrete resources map method arguments to API paths, query
+parameters, and request bodies.
 
 ### 4.1 客户端（Client）
 
@@ -297,7 +307,16 @@ class PaginatedList:
             page += 1
 ```
 
-## 7. 错误处理策略 [TODO: 实现增强的日志记录功能]
+## 7. 测试策略
+
+Tests are split into unit tests, integration tests, and live tests. Unit tests
+mock resource clients and verify generated paths, params, methods, and bodies.
+Integration tests use fake HTTP sessions and responses to verify client
+behavior without network access. Live tests are marked with `pytest.mark.live`,
+read `GITEE_TOKEN` from the environment, and cover stable read-only Gitee API
+calls.
+
+## 8. 错误处理策略 [TODO: 实现增强的日志记录功能]
 
 SDK将采用以下错误处理策略：
 
@@ -306,7 +325,7 @@ SDK将采用以下错误处理策略：
 3. **重试机制**：对于可重试的错误（如网络超时、速率限制），提供自动重试功能
 4. **日志记录**：记录请求和错误信息，便于调试
 
-## 8. 依赖管理
+## 9. 依赖管理
 
 使用uv进行依赖管理，在`pyproject.toml`中定义项目依赖：
 
@@ -316,8 +335,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gitee-sdk"
-version = "0.1.0"
+name = "gitee-openapi"
+version = "0.2.11"
 description = "Python SDK for Gitee API"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -336,7 +355,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "httpx>=0.24.0",
+    "requests>=2.31.0",
     "pydantic>=2.0.0",
 ]
 
@@ -355,6 +374,7 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/bojackli/gitee-sdk"
+Source = "https://github.com/bojackli/gitee-sdk"
 Documentation = "https://gitee-sdk.readthedocs.io"
 Issues = "https://github.com/bojackli/gitee-sdk/issues"
 
@@ -365,15 +385,20 @@ target-version = ["py38"]
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+markers = [
+    "live: tests that call the real Gitee API and require GITEE_TOKEN",
+]
+
 [tool.mypy]
-python_version = "3.8"
+version = "0.2.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 ```
 
-## 9. 使用示例
+## 10. 使用示例
 
 ```python
 from gitee import GiteeClient
@@ -400,7 +425,7 @@ pr = client.pulls.get("octocat", "hello-world", 1)
 print(f"PR #{pr['number']}: {pr['title']} ({pr['state']})")
 ```
 
-## 10. 扩展性考虑
+## 11. 扩展性考虑
 
 为确保SDK具有良好的扩展性，采取以下措施：
 
@@ -410,7 +435,7 @@ print(f"PR #{pr['number']}: {pr['title']} ({pr['state']})")
 4. **中间件支持**：支持添加请求/响应中间件，扩展功能
 5. **版本兼容**：设计时考虑API版本变化，便于适配新版本
 
-## 11. 后续开发计划
+## 12. 后续开发计划
 
 1. **完善文档**：编写详细的API文档和使用示例
 2. **增加测试覆盖**：编写单元测试和集成测试
@@ -419,4 +444,3 @@ print(f"PR #{pr['number']}: {pr['title']} ({pr['state']})")
 5. **异步支持**：添加异步API支持
 6. **类型提示**：完善类型注解，提高IDE支持
 7. **命令行工具**：开发配套的命令行工具
-

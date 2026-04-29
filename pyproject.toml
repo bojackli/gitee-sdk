@@ -53,6 +53,11 @@ target-version = ["py38"]
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+markers = [
+    "live: tests that call the real Gitee API and require GITEE_TOKEN",
+]
+
 [tool.mypy]
 version = "0.2.11"
 warn_return_any = true

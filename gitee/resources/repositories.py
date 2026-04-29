@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from gitee.resources.base import PaginatedList, Resource
 from gitee.resources.branches import Branches
+from gitee.resources.commits import Commits
 from gitee.utils import filter_none_values, validate_required_params
 
 
@@ -19,6 +20,7 @@ class Repositories(Resource):
     def __init__(self, client: Any) -> None:
         super().__init__(client)
         self._branches = Branches(client)
+        self._commits = Commits(client)
 
     def list(
         self,
@@ -186,22 +188,6 @@ class Repositories(Resource):
         """获取仓库分支列表。"""
         return self._branches.list(owner, repo, page=page, per_page=per_page)
 
-    def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
-        """获取提交信息。
-
-        Args:
-            owner: 仓库所属用户/组织
-            repo: 仓库名称
-            sha: 提交的SHA值
-
-        Returns:
-            提交信息
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "sha": sha}, ["owner", "repo", "sha"]
-        )
-        return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
-
     def get_branch(self, owner: str, repo: str, branch: str) -> Dict[str, Any]:
         """获取仓库分支详情。"""
         return self._branches.get(owner, repo, branch)
@@ -281,51 +267,45 @@ class Repositories(Resource):
         page: Optional[int] = None,
         per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库提交列表。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            sha: 分支名称、标签名称或提交SHA
-            path: 文件路径
-            author: 作者
-            since: 起始时间，ISO 8601格式
-            until: 结束时间，ISO 8601格式
-            page: 页码
-            per_page: 每页数量
-
-        Returns:
-            提交列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values(
-            {
-                "sha": sha,
-                "path": path,
-                "author": author,
-                "since": since,
-                "until": until,
-                "page": page,
-                "per_page": per_page,
-            }
+        """获取仓库提交列表。"""
+        return self._commits.list(
+            owner,
+            repo,
+            sha=sha,
+            path=path,
+            author=author,
+            since=since,
+            until=until,
+            page=page,
+            per_page=per_page,
         )
-        return self._get(f"/repos/{owner}/{repo}/commits", params=params)
 
     def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
-        """获取仓库提交详情。
+        """获取仓库提交详情。"""
+        return self._commits.get(owner, repo, sha)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            sha: 提交SHA
-
-        Returns:
-            提交详情
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "sha": sha}, ["owner", "repo", "sha"]
+    def list_commits_paginated(
+        self,
+        owner: str,
+        repo: str,
+        sha: Optional[str] = None,
+        path: Optional[str] = None,
+        author: Optional[str] = None,
+        since: Optional[str] = None,
+        until: Optional[str] = None,
+        per_page: Optional[int] = None,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库提交列表。"""
+        return self._commits.list_paginated(
+            owner,
+            repo,
+            sha=sha,
+            path=path,
+            author=author,
+            since=since,
+            until=until,
+            per_page=per_page,
         )
-        return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
 
     def list_forks(
         self,

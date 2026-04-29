@@ -6,6 +6,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from gitee.resources.base import PaginatedList, Resource
+from gitee.resources.branches import Branches
 from gitee.utils import filter_none_values, validate_required_params
 
 
@@ -14,6 +15,10 @@ class Repositories(Resource):
 
     提供与Gitee仓库相关的API功能。
     """
+
+    def __init__(self, client: Any) -> None:
+        super().__init__(client)
+        self._branches = Branches(client)
 
     def list(
         self,
@@ -52,9 +57,7 @@ class Repositories(Resource):
         )
         return self._get(f"/users/{owner}/repos", params=params)
 
-    def get(
-        self, owner: str, repo: str
-    ) -> Dict[str, Any]:
+    def get(self, owner: str, repo: str) -> Dict[str, Any]:
         """获取仓库详情。
 
         Args:
@@ -174,22 +177,14 @@ class Repositories(Resource):
         self._delete(f"/repos/{owner}/{repo}")
 
     def list_branches(
-        self, owner: str, repo: str, page: Optional[int] = None, per_page: Optional[int] = None
+        self,
+        owner: str,
+        repo: str,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库分支列表。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            page: 页码
-            per_page: 每页数量
-
-        Returns:
-            分支列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/branches", params=params)
+        """获取仓库分支列表。"""
+        return self._branches.list(owner, repo, page=page, per_page=per_page)
 
     def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
         """获取提交信息。
@@ -202,28 +197,23 @@ class Repositories(Resource):
         Returns:
             提交信息
         """
-        validate_required_params({"owner": owner, "repo": repo, "sha": sha},
-                               ["owner", "repo", "sha"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "sha": sha}, ["owner", "repo", "sha"]
+        )
         return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
 
-    def get_branch(
-        self, owner: str, repo: str, branch: str
-    ) -> Dict[str, Any]:
-        """获取仓库分支详情。
+    def get_branch(self, owner: str, repo: str, branch: str) -> Dict[str, Any]:
+        """获取仓库分支详情。"""
+        return self._branches.get(owner, repo, branch)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            branch: 分支名称
-
-        Returns:
-            分支详情
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "branch": branch},
-            ["owner", "repo", "branch"],
-        )
-        return self._get(f"/repos/{owner}/{repo}/branches/{branch}")
+    def list_branches_paginated(
+        self,
+        owner: str,
+        repo: str,
+        per_page: Optional[int] = None,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库分支列表。"""
+        return self._branches.list_paginated(owner, repo, per_page=per_page)
 
     def list_collaborators(
         self,
@@ -321,9 +311,7 @@ class Repositories(Resource):
         )
         return self._get(f"/repos/{owner}/{repo}/commits", params=params)
 
-    def get_commit(
-        self, owner: str, repo: str, sha: str
-    ) -> Dict[str, Any]:
+    def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
         """获取仓库提交详情。
 
         Args:
@@ -364,7 +352,11 @@ class Repositories(Resource):
         return self._get(f"/repos/{owner}/{repo}/forks", params=params)
 
     def create_fork(
-        self, owner: str, repo: str, organization: Optional[str] = None, name: Optional[str] = None
+        self,
+        owner: str,
+        repo: str,
+        organization: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """创建仓库Fork。
 
@@ -380,7 +372,7 @@ class Repositories(Resource):
         validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
         data = filter_none_values({"organization": organization, "name": name})
         return self._post(f"/repos/{owner}/{repo}/forks", json=data)
-        
+
     def get_raw(
         self, owner: str, repo: str, path: str, ref: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -395,6 +387,8 @@ class Repositories(Resource):
         Returns:
             文件原始内容
         """
-        validate_required_params({"owner": owner, "repo": repo, "path": path}, ["owner", "repo", "path"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "path": path}, ["owner", "repo", "path"]
+        )
         params = filter_none_values({"ref": ref})
         return self._get(f"/repos/{owner}/{repo}/raw/{path}", params=params)

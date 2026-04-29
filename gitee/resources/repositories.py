@@ -61,6 +61,26 @@ class Repositories(Resource):
         )
         return self._get(f"/users/{owner}/repos", params=params)
 
+    def list_paginated(
+        self,
+        owner: str,
+        type: Optional[str] = None,
+        sort: Optional[str] = None,
+        direction: Optional[str] = None,
+        per_page: Optional[int] = None,
+        **kwargs: Any,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库列表。"""
+        self._require(owner=owner)
+        params = self._params(
+            type=type,
+            sort=sort,
+            direction=direction,
+            per_page=per_page,
+            **kwargs,
+        )
+        return self._paginated(f"/users/{owner}/repos", params=params)
+
     def get(self, owner: str, repo: str) -> Dict[str, Any]:
         """获取仓库详情。
 

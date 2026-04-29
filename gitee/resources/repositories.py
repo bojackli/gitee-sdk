@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from gitee.resources.base import PaginatedList, Resource
 from gitee.resources.branches import Branches
+from gitee.resources.collaborators import Collaborators
 from gitee.resources.commits import Commits
 from gitee.utils import filter_none_values, validate_required_params
 
@@ -21,6 +22,7 @@ class Repositories(Resource):
         super().__init__(client)
         self._branches = Branches(client)
         self._commits = Commits(client)
+        self._collaborators = Collaborators(client)
 
     def list(
         self,
@@ -208,52 +210,22 @@ class Repositories(Resource):
         page: Optional[int] = None,
         per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库协作者列表。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            page: 页码
-            per_page: 每页数量
-
-        Returns:
-            协作者列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/collaborators", params=params)
+        """获取仓库协作者列表。"""
+        return self._collaborators.list(owner, repo, page=page, per_page=per_page)
 
     def add_collaborator(
-        self, owner: str, repo: str, username: str, permission: Optional[str] = None
+        self,
+        owner: str,
+        repo: str,
+        username: str,
+        permission: Optional[str] = None,
     ) -> None:
-        """添加仓库协作者。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            username: 用户名
-            permission: 权限，可选值：pull, push, admin
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "username": username},
-            ["owner", "repo", "username"],
-        )
-        data = filter_none_values({"permission": permission})
-        self._put(f"/repos/{owner}/{repo}/collaborators/{username}", json=data)
+        """添加仓库协作者。"""
+        self._collaborators.add(owner, repo, username, permission=permission)
 
     def remove_collaborator(self, owner: str, repo: str, username: str) -> None:
-        """移除仓库协作者。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            username: 用户名
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "username": username},
-            ["owner", "repo", "username"],
-        )
-        self._delete(f"/repos/{owner}/{repo}/collaborators/{username}")
+        """移除仓库协作者。"""
+        self._collaborators.remove(owner, repo, username)
 
     def list_commits(
         self,

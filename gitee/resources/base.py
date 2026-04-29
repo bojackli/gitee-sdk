@@ -20,6 +20,31 @@ class Resource:
     def __init__(self, client: Any) -> None:
         self.client = client
 
+    def _require(self, **params: Any) -> None:
+        """Validate required parameters passed as keyword arguments."""
+        missing = [name for name, value in params.items() if value is None]
+        if missing:
+            from gitee.exceptions import ValidationError
+
+            raise ValidationError(f"Missing required parameters: {', '.join(missing)}")
+
+    def _params(self, **params: Any) -> Dict[str, Any]:
+        """Build query params without None values."""
+        return {key: value for key, value in params.items() if value is not None}
+
+    def _json(self, **data: Any) -> Dict[str, Any]:
+        """Build JSON body data without None values."""
+        return {key: value for key, value in data.items() if value is not None}
+
+    def _paginated(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        item_key: Optional[str] = None,
+    ) -> "PaginatedList":
+        """Create a paginated list for a resource endpoint."""
+        return PaginatedList(self.client, url, params=params, item_key=item_key)
+
     def _get(
         self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
@@ -59,11 +84,11 @@ class Resource:
         """
         request_kwargs = {}
         if params is not None:
-            request_kwargs['params'] = params
+            request_kwargs["params"] = params
         if json is not None:
-            request_kwargs['json'] = json
+            request_kwargs["json"] = json
         if data is not None:
-            request_kwargs['data'] = data
+            request_kwargs["data"] = data
         request_kwargs.update(kwargs)
         return self.client._post(url, **request_kwargs)
 

@@ -43,3 +43,23 @@ class TestResourceHelpers:
         assert paginated.url == "/repos/owner/repo/commits"
         assert paginated.params == {"sha": "main"}
         assert paginated.item_key == "commits"
+
+    def test_paginated_list_uses_configured_per_page_when_iterating(self):
+        client = Mock()
+        client.request.side_effect = [[{"id": 1}], []]
+
+        paginated = PaginatedList(
+            client,
+            "/repos/owner/repo/branches",
+            params={"per_page": 100},
+        )
+
+        assert paginated.all() == [{"id": 1}]
+        assert client.request.call_args_list[0].kwargs["params"] == {
+            "per_page": 100,
+            "page": 1,
+        }
+        assert client.request.call_args_list[1].kwargs["params"] == {
+            "per_page": 100,
+            "page": 2,
+        }

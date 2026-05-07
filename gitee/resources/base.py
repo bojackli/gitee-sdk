@@ -183,13 +183,13 @@ class PaginatedList:
         self.params = params or {}
         self.item_key = item_key
         self.current_page = 1
-        self.per_page = DEFAULT_PAGE_SIZE
+        self.per_page = self.params.get("per_page", DEFAULT_PAGE_SIZE)
         self.total_pages = None
         self.total_count = None
         self.items = []
 
     def get_page(
-        self, page: int = 1, per_page: int = DEFAULT_PAGE_SIZE
+        self, page: int = 1, per_page: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """获取指定页的数据。
 
@@ -200,14 +200,15 @@ class PaginatedList:
         Returns:
             当前页的数据列表
         """
+        page_size = per_page if per_page is not None else self.per_page
         params = self.params.copy()
-        params.update({"page": page, "per_page": per_page})
+        params.update({"page": page, "per_page": page_size})
 
         response = self.client.request("GET", self.url, params=params)
 
         # 更新分页信息
         self.current_page = page
-        self.per_page = per_page
+        self.per_page = page_size
 
         # 处理响应
         if self.item_key and isinstance(response, dict):

@@ -10,6 +10,7 @@ from gitee.resources.branches import Branches
 from gitee.resources.collaborators import Collaborators
 from gitee.resources.commits import Commits
 from gitee.resources.contents import Contents
+from gitee.resources.releases import Releases
 from gitee.utils import filter_none_values, validate_required_params
 
 
@@ -25,6 +26,7 @@ class Repositories(Resource):
         self._commits = Commits(client)
         self._collaborators = Collaborators(client)
         self._contents = Contents(client)
+        self._releases = Releases(client)
 
     def list(
         self,
@@ -490,3 +492,94 @@ class Repositories(Resource):
     ) -> Dict[str, Any]:
         """获取文件 blame 信息。"""
         return self._contents.blame(owner, repo, path, ref=ref)
+
+    def list_releases(
+        self,
+        owner: str,
+        repo: str,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """获取仓库 Release 列表。"""
+        return self._releases.list(owner, repo, page=page, per_page=per_page)
+
+    def create_release(
+        self,
+        owner: str,
+        repo: str,
+        tag_name: str,
+        name: Optional[str] = None,
+        body: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """创建仓库 Release。"""
+        return self._releases.create(
+            owner, repo, tag_name, name=name, body=body, **kwargs
+        )
+
+    def get_release(
+        self, owner: str, repo: str, release_id: Union[int, str]
+    ) -> Dict[str, Any]:
+        """获取仓库 Release。"""
+        return self._releases.get(owner, repo, release_id)
+
+    def update_release(
+        self, owner: str, repo: str, release_id: Union[int, str], **kwargs: Any
+    ) -> Dict[str, Any]:
+        """更新仓库 Release。"""
+        return self._releases.update(owner, repo, release_id, **kwargs)
+
+    def delete_release(self, owner: str, repo: str, release_id: Union[int, str]) -> Any:
+        """删除仓库 Release。"""
+        return self._releases.delete(owner, repo, release_id)
+
+    def get_latest_release(self, owner: str, repo: str) -> Dict[str, Any]:
+        """获取仓库最新 Release。"""
+        return self._releases.latest(owner, repo)
+
+    def get_release_by_tag(self, owner: str, repo: str, tag: str) -> Dict[str, Any]:
+        """根据 tag 获取仓库 Release。"""
+        return self._releases.by_tag(owner, repo, tag)
+
+    def list_release_attachments(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """获取 Release 附件列表。"""
+        return self._releases.list_attachments(
+            owner, repo, release_id, page=page, per_page=per_page
+        )
+
+    def get_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Dict[str, Any]:
+        """获取 Release 附件。"""
+        return self._releases.get_attachment(owner, repo, release_id, attach_file_id)
+
+    def delete_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Any:
+        """删除 Release 附件。"""
+        return self._releases.delete_attachment(owner, repo, release_id, attach_file_id)
+
+    def download_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Any:
+        """下载 Release 附件。"""
+        return self._releases.download_attachment(owner, repo, release_id, attach_file_id)

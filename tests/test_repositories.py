@@ -312,3 +312,83 @@ class TestRepositories:
         mock_client._get.assert_called_with(
             "/repos/owner/repo/collaborators/alice/permission"
         )
+
+    def test_list_releases(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.list_releases("owner", "repo", page=1, per_page=10)
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/releases",
+            params={"page": 1, "per_page": 10},
+        )
+
+    def test_create_release(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.create_release("owner", "repo", tag_name="v1.0.0", name="One", body="notes")
+        mock_client._post.assert_called_with(
+            "/repos/owner/repo/releases",
+            json={"tag_name": "v1.0.0", "name": "One", "body": "notes"},
+        )
+
+    def test_get_release(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_release("owner", "repo", 7)
+        mock_client._get.assert_called_with("/repos/owner/repo/releases/7")
+
+    def test_update_release(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.update_release("owner", "repo", 7, name="Two")
+        mock_client.request.assert_called_with(
+            "PATCH",
+            "/repos/owner/repo/releases/7",
+            params=None,
+            json={"name": "Two"},
+            data=None,
+        )
+
+    def test_delete_release(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.delete_release("owner", "repo", 7)
+        mock_client.request.assert_called_with(
+            "DELETE",
+            "/repos/owner/repo/releases/7",
+            params=None,
+        )
+
+    def test_get_latest_release(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_latest_release("owner", "repo")
+        mock_client._get.assert_called_with("/repos/owner/repo/releases/latest")
+
+    def test_get_release_by_tag(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_release_by_tag("owner", "repo", "v1.0.0")
+        mock_client._get.assert_called_with("/repos/owner/repo/releases/tags/v1.0.0")
+
+    def test_list_release_attachments(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.list_release_attachments("owner", "repo", 7)
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/releases/7/attach_files",
+            params={},
+        )
+
+    def test_get_release_attachment(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_release_attachment("owner", "repo", 7, 3)
+        mock_client._get.assert_called_with("/repos/owner/repo/releases/7/attach_files/3")
+
+    def test_delete_release_attachment(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.delete_release_attachment("owner", "repo", 7, 3)
+        mock_client.request.assert_called_with(
+            "DELETE",
+            "/repos/owner/repo/releases/7/attach_files/3",
+            params=None,
+        )
+
+    def test_download_release_attachment(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.download_release_attachment("owner", "repo", 7, 3)
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/releases/7/attach_files/3/download"
+        )

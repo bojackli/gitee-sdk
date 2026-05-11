@@ -15,7 +15,7 @@ class Gists(Resource):
     提供与Gitee代码片段相关的API功能。
     """
 
-    def list(self, **kwargs) -> List[Dict[str, Any]]:
+    def list(self, **kwargs: Any) -> List[Dict[str, Any]]:
         """获取代码片段列表。
 
         Args:
@@ -38,7 +38,7 @@ class Gists(Resource):
         validate_required_params({"gist_id": gist_id}, ["gist_id"])
         return self._get(f"/gists/{gist_id}")
 
-    def create(self, files: Dict[str, Dict[str, str]], **kwargs) -> Dict[str, Any]:
+    def create(self, files: Dict[str, Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
         """创建代码片段。
 
         Args:
@@ -52,7 +52,7 @@ class Gists(Resource):
         kwargs["files"] = files
         return self._post("/gists", json=kwargs)
 
-    def update(self, gist_id: str, **kwargs) -> Dict[str, Any]:
+    def update(self, gist_id: str, **kwargs: Any) -> Dict[str, Any]:
         """更新代码片段。
 
         Args:

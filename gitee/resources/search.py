@@ -1,12 +1,23 @@
+from typing import Any, Dict, Optional
+
 from .base import Resource
+
 
 class Search(Resource):
     """仓库搜索相关API"""
-    
-    def search(self, q, sort=None, order=None, page=None, per_page=None, **kwargs):
+
+    def search(
+        self,
+        q: str,
+        sort: Optional[str] = None,
+        order: Optional[str] = None,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
         """
         搜索仓库
-        
+
         参数:
             q: 搜索关键词
             sort: 排序字段(可选: stars, forks, updated)
@@ -14,11 +25,11 @@ class Search(Resource):
             page: 页码
             per_page: 每页数量
             **kwargs: 其他可选参数
-        
+
         返回:
             分页的搜索结果
         """
-        params = {"q": q}
+        params: Dict[str, Any] = {"q": q}
         if sort:
             params["sort"] = sort
         if order:
@@ -28,5 +39,5 @@ class Search(Resource):
         if per_page:
             params["per_page"] = per_page
         params.update(kwargs)
-        
+
         return self._get("/search/repositories", params=params)

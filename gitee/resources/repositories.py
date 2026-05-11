@@ -6,6 +6,11 @@
 from typing import Any, Dict, List, Optional, Union
 
 from gitee.resources.base import PaginatedList, Resource
+from gitee.resources.branches import Branches
+from gitee.resources.collaborators import Collaborators
+from gitee.resources.commits import Commits
+from gitee.resources.contents import Contents
+from gitee.resources.releases import Releases
 from gitee.utils import filter_none_values, validate_required_params
 
 
@@ -14,6 +19,14 @@ class Repositories(Resource):
 
     提供与Gitee仓库相关的API功能。
     """
+
+    def __init__(self, client: Any) -> None:
+        super().__init__(client)
+        self._branches = Branches(client)
+        self._commits = Commits(client)
+        self._collaborators = Collaborators(client)
+        self._contents = Contents(client)
+        self._releases = Releases(client)
 
     def list(
         self,
@@ -52,9 +65,27 @@ class Repositories(Resource):
         )
         return self._get(f"/users/{owner}/repos", params=params)
 
-    def get(
-        self, owner: str, repo: str
-    ) -> Dict[str, Any]:
+    def list_paginated(
+        self,
+        owner: str,
+        type: Optional[str] = None,
+        sort: Optional[str] = None,
+        direction: Optional[str] = None,
+        per_page: Optional[int] = None,
+        **kwargs: Any,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库列表。"""
+        self._require(owner=owner)
+        params = self._params(
+            type=type,
+            sort=sort,
+            direction=direction,
+            per_page=per_page,
+            **kwargs,
+        )
+        return self._paginated(f"/users/{owner}/repos", params=params)
+
+    def get(self, owner: str, repo: str) -> Dict[str, Any]:
         """获取仓库详情。
 
         Args:
@@ -174,56 +205,59 @@ class Repositories(Resource):
         self._delete(f"/repos/{owner}/{repo}")
 
     def list_branches(
-        self, owner: str, repo: str, page: Optional[int] = None, per_page: Optional[int] = None
+        self,
+        owner: str,
+        repo: str,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库分支列表。
+        """获取仓库分支列表。"""
+        return self._branches.list(owner, repo, page=page, per_page=per_page)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            page: 页码
-            per_page: 每页数量
+    def get_branch(self, owner: str, repo: str, branch: str) -> Dict[str, Any]:
+        """获取仓库分支详情。"""
+        return self._branches.get(owner, repo, branch)
 
-        Returns:
-            分支列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/branches", params=params)
-
-    def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
-        """获取提交信息。
-
-        Args:
-            owner: 仓库所属用户/组织
-            repo: 仓库名称
-            sha: 提交的SHA值
-
-        Returns:
-            提交信息
-        """
-        validate_required_params({"owner": owner, "repo": repo, "sha": sha},
-                               ["owner", "repo", "sha"])
-        return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
-
-    def get_branch(
-        self, owner: str, repo: str, branch: str
+    def create_branch(
+        self, owner: str, repo: str, refs: str, branch_name: str
     ) -> Dict[str, Any]:
-        """获取仓库分支详情。
+        """创建仓库分支。"""
+        return self._branches.create(owner, repo, refs, branch_name)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            branch: 分支名称
+    def protect_branch(self, owner: str, repo: str, branch: str, **kwargs: Any) -> Any:
+        """设置分支保护。"""
+        return self._branches.protect(owner, repo, branch, **kwargs)
 
-        Returns:
-            分支详情
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "branch": branch},
-            ["owner", "repo", "branch"],
-        )
-        return self._get(f"/repos/{owner}/{repo}/branches/{branch}")
+    def unprotect_branch(self, owner: str, repo: str, branch: str) -> Any:
+        """取消分支保护。"""
+        return self._branches.unprotect(owner, repo, branch)
+
+    def create_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str, **kwargs: Any
+    ) -> Any:
+        """创建保护分支规则。"""
+        return self._branches.create_protection_rule(owner, repo, wildcard, **kwargs)
+
+    def update_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str, **kwargs: Any
+    ) -> Any:
+        """更新保护分支规则。"""
+        return self._branches.update_protection_rule(owner, repo, wildcard, **kwargs)
+
+    def delete_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str
+    ) -> Any:
+        """删除保护分支规则。"""
+        return self._branches.delete_protection_rule(owner, repo, wildcard)
+
+    def list_branches_paginated(
+        self,
+        owner: str,
+        repo: str,
+        per_page: Optional[int] = None,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库分支列表。"""
+        return self._branches.list_paginated(owner, repo, per_page=per_page)
 
     def list_collaborators(
         self,
@@ -232,52 +266,32 @@ class Repositories(Resource):
         page: Optional[int] = None,
         per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库协作者列表。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            page: 页码
-            per_page: 每页数量
-
-        Returns:
-            协作者列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/collaborators", params=params)
+        """获取仓库协作者列表。"""
+        return self._collaborators.list(owner, repo, page=page, per_page=per_page)
 
     def add_collaborator(
-        self, owner: str, repo: str, username: str, permission: Optional[str] = None
+        self,
+        owner: str,
+        repo: str,
+        username: str,
+        permission: Optional[str] = None,
     ) -> None:
-        """添加仓库协作者。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            username: 用户名
-            permission: 权限，可选值：pull, push, admin
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "username": username},
-            ["owner", "repo", "username"],
-        )
-        data = filter_none_values({"permission": permission})
-        self._put(f"/repos/{owner}/{repo}/collaborators/{username}", json=data)
+        """添加仓库协作者。"""
+        self._collaborators.add(owner, repo, username, permission=permission)
 
     def remove_collaborator(self, owner: str, repo: str, username: str) -> None:
-        """移除仓库协作者。
+        """移除仓库协作者。"""
+        self._collaborators.remove(owner, repo, username)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            username: 用户名
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "username": username},
-            ["owner", "repo", "username"],
-        )
-        self._delete(f"/repos/{owner}/{repo}/collaborators/{username}")
+    def is_collaborator(self, owner: str, repo: str, username: str) -> Any:
+        """判断用户是否为仓库成员。"""
+        return self._collaborators.is_collaborator(owner, repo, username)
+
+    def get_collaborator_permission(
+        self, owner: str, repo: str, username: str
+    ) -> Dict[str, Any]:
+        """查看仓库成员权限。"""
+        return self._collaborators.get_permission(owner, repo, username)
 
     def list_commits(
         self,
@@ -291,53 +305,45 @@ class Repositories(Resource):
         page: Optional[int] = None,
         per_page: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        """获取仓库提交列表。
-
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            sha: 分支名称、标签名称或提交SHA
-            path: 文件路径
-            author: 作者
-            since: 起始时间，ISO 8601格式
-            until: 结束时间，ISO 8601格式
-            page: 页码
-            per_page: 每页数量
-
-        Returns:
-            提交列表
-        """
-        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
-        params = filter_none_values(
-            {
-                "sha": sha,
-                "path": path,
-                "author": author,
-                "since": since,
-                "until": until,
-                "page": page,
-                "per_page": per_page,
-            }
+        """获取仓库提交列表。"""
+        return self._commits.list(
+            owner,
+            repo,
+            sha=sha,
+            path=path,
+            author=author,
+            since=since,
+            until=until,
+            page=page,
+            per_page=per_page,
         )
-        return self._get(f"/repos/{owner}/{repo}/commits", params=params)
 
-    def get_commit(
-        self, owner: str, repo: str, sha: str
-    ) -> Dict[str, Any]:
-        """获取仓库提交详情。
+    def get_commit(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
+        """获取仓库提交详情。"""
+        return self._commits.get(owner, repo, sha)
 
-        Args:
-            owner: 仓库所有者
-            repo: 仓库名称
-            sha: 提交SHA
-
-        Returns:
-            提交详情
-        """
-        validate_required_params(
-            {"owner": owner, "repo": repo, "sha": sha}, ["owner", "repo", "sha"]
+    def list_commits_paginated(
+        self,
+        owner: str,
+        repo: str,
+        sha: Optional[str] = None,
+        path: Optional[str] = None,
+        author: Optional[str] = None,
+        since: Optional[str] = None,
+        until: Optional[str] = None,
+        per_page: Optional[int] = None,
+    ) -> PaginatedList:
+        """获取可迭代分页仓库提交列表。"""
+        return self._commits.list_paginated(
+            owner,
+            repo,
+            sha=sha,
+            path=path,
+            author=author,
+            since=since,
+            until=until,
+            per_page=per_page,
         )
-        return self._get(f"/repos/{owner}/{repo}/commits/{sha}")
 
     def list_forks(
         self,
@@ -364,7 +370,11 @@ class Repositories(Resource):
         return self._get(f"/repos/{owner}/{repo}/forks", params=params)
 
     def create_fork(
-        self, owner: str, repo: str, organization: Optional[str] = None, name: Optional[str] = None
+        self,
+        owner: str,
+        repo: str,
+        organization: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """创建仓库Fork。
 
@@ -380,7 +390,7 @@ class Repositories(Resource):
         validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
         data = filter_none_values({"organization": organization, "name": name})
         return self._post(f"/repos/{owner}/{repo}/forks", json=data)
-        
+
     def get_raw(
         self, owner: str, repo: str, path: str, ref: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -395,6 +405,185 @@ class Repositories(Resource):
         Returns:
             文件原始内容
         """
-        validate_required_params({"owner": owner, "repo": repo, "path": path}, ["owner", "repo", "path"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "path": path}, ["owner", "repo", "path"]
+        )
         params = filter_none_values({"ref": ref})
         return self._get(f"/repos/{owner}/{repo}/raw/{path}", params=params)
+
+    def get_readme(
+        self, owner: str, repo: str, ref: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取仓库 README。"""
+        return self._contents.get_readme(owner, repo, ref=ref)
+
+    def get_contents(
+        self, owner: str, repo: str, path: str = "", ref: Optional[str] = None
+    ) -> Any:
+        """获取仓库路径内容。"""
+        return self._contents.get(owner, repo, path=path, ref=ref)
+
+    def create_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        content: str,
+        message: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """在仓库中新建文件。"""
+        return self._contents.create_file(
+            owner, repo, path, content, message, branch=branch, **kwargs
+        )
+
+    def update_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        content: str,
+        message: str,
+        sha: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """更新仓库文件。"""
+        return self._contents.update_file(
+            owner, repo, path, content, message, sha, branch=branch, **kwargs
+        )
+
+    def delete_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        message: str,
+        sha: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """删除仓库文件。"""
+        return self._contents.delete_file(
+            owner, repo, path, message, sha, branch=branch, **kwargs
+        )
+
+    def create_commit(
+        self,
+        owner: str,
+        repo: str,
+        files: List[Dict[str, Any]],
+        message: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """提交多个文件变更。"""
+        return self._contents.create_commit(
+            owner, repo, files, message, branch=branch, **kwargs
+        )
+
+    def compare_commits(
+        self, owner: str, repo: str, base: str, head: str
+    ) -> Dict[str, Any]:
+        """对比两个提交或分支。"""
+        return self._contents.compare(owner, repo, base, head)
+
+    def get_blame(
+        self, owner: str, repo: str, path: str, ref: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取文件 blame 信息。"""
+        return self._contents.blame(owner, repo, path, ref=ref)
+
+    def list_releases(
+        self,
+        owner: str,
+        repo: str,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """获取仓库 Release 列表。"""
+        return self._releases.list(owner, repo, page=page, per_page=per_page)
+
+    def create_release(
+        self,
+        owner: str,
+        repo: str,
+        tag_name: str,
+        name: Optional[str] = None,
+        body: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """创建仓库 Release。"""
+        return self._releases.create(
+            owner, repo, tag_name, name=name, body=body, **kwargs
+        )
+
+    def get_release(
+        self, owner: str, repo: str, release_id: Union[int, str]
+    ) -> Dict[str, Any]:
+        """获取仓库 Release。"""
+        return self._releases.get(owner, repo, release_id)
+
+    def update_release(
+        self, owner: str, repo: str, release_id: Union[int, str], **kwargs: Any
+    ) -> Dict[str, Any]:
+        """更新仓库 Release。"""
+        return self._releases.update(owner, repo, release_id, **kwargs)
+
+    def delete_release(self, owner: str, repo: str, release_id: Union[int, str]) -> Any:
+        """删除仓库 Release。"""
+        return self._releases.delete(owner, repo, release_id)
+
+    def get_latest_release(self, owner: str, repo: str) -> Dict[str, Any]:
+        """获取仓库最新 Release。"""
+        return self._releases.latest(owner, repo)
+
+    def get_release_by_tag(self, owner: str, repo: str, tag: str) -> Dict[str, Any]:
+        """根据 tag 获取仓库 Release。"""
+        return self._releases.by_tag(owner, repo, tag)
+
+    def list_release_attachments(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """获取 Release 附件列表。"""
+        return self._releases.list_attachments(
+            owner, repo, release_id, page=page, per_page=per_page
+        )
+
+    def get_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Dict[str, Any]:
+        """获取 Release 附件。"""
+        return self._releases.get_attachment(owner, repo, release_id, attach_file_id)
+
+    def delete_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Any:
+        """删除 Release 附件。"""
+        return self._releases.delete_attachment(owner, repo, release_id, attach_file_id)
+
+    def download_release_attachment(
+        self,
+        owner: str,
+        repo: str,
+        release_id: Union[int, str],
+        attach_file_id: Union[int, str],
+    ) -> Any:
+        """下载 Release 附件。"""
+        return self._releases.download_attachment(
+            owner, repo, release_id, attach_file_id
+        )

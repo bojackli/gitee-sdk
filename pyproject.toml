@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gitee-openapi"
-version = "0.2.11"
+name = "gitee_openapi"
+version = "0.2.16"
 description = "Python SDK for Gitee API"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -34,6 +34,7 @@ dev = [
     "black>=23.0.0",
     "isort>=5.0.0",
     "mypy>=1.0.0",
+    "types-requests>=2.31.0",
 ]
 docs = [
     "sphinx>=6.0.0",
@@ -50,12 +51,27 @@ Issues = "https://github.com/bojackli/gitee-sdk/issues"
 line-length = 88
 target-version = ["py38"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["gitee"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "gitee",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+markers = [
+    "live: tests that call the real Gitee API and require GITEE_TOKEN",
+]
+
 [tool.mypy]
-version = "0.2.11"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

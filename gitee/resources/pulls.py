@@ -60,9 +60,7 @@ class PullRequests(Resource):
         )
         return self._get(f"/repos/{owner}/{repo}/pulls", params=params)
 
-    def get(
-        self, owner: str, repo: str, number: Union[int, str]
-    ) -> Dict[str, Any]:
+    def get(self, owner: str, repo: str, number: Union[int, str]) -> Dict[str, Any]:
         """获取Pull Request详情。
 
         Args:
@@ -268,7 +266,9 @@ class PullRequests(Resource):
             ["owner", "repo", "number"],
         )
         params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/pulls/{number}/comments", params=params)
+        return self._get(
+            f"/repos/{owner}/{repo}/pulls/{number}/comments", params=params
+        )
 
     def create_comment(
         self,
@@ -307,3 +307,153 @@ class PullRequests(Resource):
             }
         )
         return self._post(f"/repos/{owner}/{repo}/pulls/{number}/comments", json=data)
+
+    def is_merged(self, owner: str, repo: str, number: Union[int, str]) -> Any:
+        """判断 Pull Request 是否已经合并。"""
+        self._require(owner=owner, repo=repo, number=number)
+        return self._get(f"/repos/{owner}/{repo}/pulls/{number}/merge")
+
+    def review(
+        self,
+        owner: str,
+        repo: str,
+        number: Union[int, str],
+        event: str,
+        body: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """处理 Pull Request 审查。"""
+        self._require(owner=owner, repo=repo, number=number, event=event)
+        data = self._json(event=event, body=body, **kwargs)
+        return self._post(f"/repos/{owner}/{repo}/pulls/{number}/review", json=data)
+
+    def test(
+        self,
+        owner: str,
+        repo: str,
+        number: Union[int, str],
+        event: str,
+        body: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """处理 Pull Request 测试。"""
+        self._require(owner=owner, repo=repo, number=number, event=event)
+        data = self._json(event=event, body=body, **kwargs)
+        return self._post(f"/repos/{owner}/{repo}/pulls/{number}/test", json=data)
+
+    def assign_reviewers(
+        self, owner: str, repo: str, number: Union[int, str], assignees: List[str]
+    ) -> Any:
+        """指派用户审查 Pull Request。"""
+        self._require(owner=owner, repo=repo, number=number, assignees=assignees)
+        return self._post(
+            f"/repos/{owner}/{repo}/pulls/{number}/assignees",
+            json={"assignees": assignees},
+        )
+
+    def unassign_reviewers(
+        self, owner: str, repo: str, number: Union[int, str], assignees: List[str]
+    ) -> Any:
+        """取消用户审查 Pull Request。"""
+        self._require(owner=owner, repo=repo, number=number, assignees=assignees)
+        return self._delete(
+            f"/repos/{owner}/{repo}/pulls/{number}/assignees",
+            json={"assignees": assignees},
+        )
+
+    def reset_reviewer_state(
+        self, owner: str, repo: str, number: Union[int, str], assignees: List[str]
+    ) -> Any:
+        """重置 Pull Request 审查状态。"""
+        self._require(owner=owner, repo=repo, number=number, assignees=assignees)
+        return self._patch(
+            f"/repos/{owner}/{repo}/pulls/{number}/assignees",
+            json={"assignees": assignees},
+        )
+
+    def assign_testers(
+        self, owner: str, repo: str, number: Union[int, str], testers: List[str]
+    ) -> Any:
+        """指派用户测试 Pull Request。"""
+        self._require(owner=owner, repo=repo, number=number, testers=testers)
+        return self._post(
+            f"/repos/{owner}/{repo}/pulls/{number}/testers",
+            json={"testers": testers},
+        )
+
+    def unassign_testers(
+        self, owner: str, repo: str, number: Union[int, str], testers: List[str]
+    ) -> Any:
+        """取消用户测试 Pull Request。"""
+        self._require(owner=owner, repo=repo, number=number, testers=testers)
+        return self._delete(
+            f"/repos/{owner}/{repo}/pulls/{number}/testers",
+            json={"testers": testers},
+        )
+
+    def reset_tester_state(
+        self, owner: str, repo: str, number: Union[int, str], testers: List[str]
+    ) -> Any:
+        """重置 Pull Request 测试状态。"""
+        self._require(owner=owner, repo=repo, number=number, testers=testers)
+        return self._patch(
+            f"/repos/{owner}/{repo}/pulls/{number}/testers",
+            json={"testers": testers},
+        )
+
+    def list_issues(self, owner: str, repo: str, number: Union[int, str]) -> Any:
+        """获取 Pull Request 关联的 issues。"""
+        self._require(owner=owner, repo=repo, number=number)
+        return self._get(f"/repos/{owner}/{repo}/pulls/{number}/issues")
+
+    def list_labels(self, owner: str, repo: str, number: Union[int, str]) -> Any:
+        """获取 Pull Request 标签。"""
+        self._require(owner=owner, repo=repo, number=number)
+        return self._get(f"/repos/{owner}/{repo}/pulls/{number}/labels")
+
+    def add_labels(
+        self, owner: str, repo: str, number: Union[int, str], labels: List[str]
+    ) -> Any:
+        """添加 Pull Request 标签。"""
+        self._require(owner=owner, repo=repo, number=number, labels=labels)
+        return self._post(
+            f"/repos/{owner}/{repo}/pulls/{number}/labels",
+            json={"labels": labels},
+        )
+
+    def replace_labels(
+        self, owner: str, repo: str, number: Union[int, str], labels: List[str]
+    ) -> Any:
+        """替换 Pull Request 标签。"""
+        self._require(owner=owner, repo=repo, number=number, labels=labels)
+        return self._put(
+            f"/repos/{owner}/{repo}/pulls/{number}/labels",
+            json={"labels": labels},
+        )
+
+    def delete_label(
+        self, owner: str, repo: str, number: Union[int, str], name: str
+    ) -> Any:
+        """删除 Pull Request 标签。"""
+        self._require(owner=owner, repo=repo, number=number, name=name)
+        return self._delete(f"/repos/{owner}/{repo}/pulls/{number}/labels/{name}")
+
+    def get_comment(self, owner: str, repo: str, comment_id: Union[int, str]) -> Any:
+        """获取 Pull Request 评论。"""
+        self._require(owner=owner, repo=repo, comment_id=comment_id)
+        return self._get(f"/repos/{owner}/{repo}/pulls/comments/{comment_id}")
+
+    def update_comment(
+        self, owner: str, repo: str, comment_id: Union[int, str], body: str
+    ) -> Any:
+        """更新 Pull Request 评论。"""
+        self._require(owner=owner, repo=repo, comment_id=comment_id, body=body)
+        return self._patch(
+            f"/repos/{owner}/{repo}/pulls/comments/{comment_id}",
+            json={"body": body},
+        )
+
+    def delete_comment(self, owner: str, repo: str, comment_id: Union[int, str]) -> Any:
+        """删除 Pull Request 评论。"""
+        self._require(owner=owner, repo=repo, comment_id=comment_id)
+        return self._delete(f"/repos/{owner}/{repo}/pulls/comments/{comment_id}")

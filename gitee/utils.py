@@ -19,7 +19,9 @@ def validate_required_params(params: Dict[str, Any], required: List[str]) -> Non
     Raises:
         ValidationError: 缺少必需参数时抛出
     """
-    missing = [param for param in required if param not in params or params[param] is None]
+    missing = [
+        param for param in required if param not in params or params[param] is None
+    ]
     if missing:
         raise ValidationError(f"Missing required parameters: {', '.join(missing)}")
 

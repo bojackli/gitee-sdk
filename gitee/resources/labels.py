@@ -3,7 +3,7 @@
 该模块提供了与Gitee仓库标签相关的API功能。
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from gitee.resources.base import Resource
 from gitee.utils import validate_required_params
@@ -25,8 +25,7 @@ class Labels(Resource):
         Returns:
             标签列表
         """
-        validate_required_params({"owner": owner, "repo": repo},
-                               ["owner", "repo"])
+        validate_required_params({"owner": owner, "repo": repo}, ["owner", "repo"])
         return self._get(f"/repos/{owner}/{repo}/labels")
 
     def get_label(self, owner: str, repo: str, name: str) -> Dict[str, Any]:
@@ -40,12 +39,19 @@ class Labels(Resource):
         Returns:
             标签信息
         """
-        validate_required_params({"owner": owner, "repo": repo, "name": name},
-                               ["owner", "repo", "name"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "name": name}, ["owner", "repo", "name"]
+        )
         return self._get(f"/repos/{owner}/{repo}/labels/{name}")
 
-    def create_label(self, owner: str, repo: str, name: str, color: str,
-                     description: str = None) -> Dict[str, Any]:
+    def create_label(
+        self,
+        owner: str,
+        repo: str,
+        name: str,
+        color: str,
+        description: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """创建标签。
 
         Args:
@@ -58,17 +64,24 @@ class Labels(Resource):
         Returns:
             创建的标签信息
         """
-        validate_required_params({"owner": owner, "repo": repo,
-                                "name": name, "color": color},
-                               ["owner", "repo", "name", "color"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "name": name, "color": color},
+            ["owner", "repo", "name", "color"],
+        )
         data = {"name": name, "color": color}
         if description:
             data["description"] = description
         return self._post(f"/repos/{owner}/{repo}/labels", json=data)
 
-    def update_label(self, owner: str, repo: str, name: str,
-                     new_name: str = None, color: str = None,
-                     description: str = None) -> Dict[str, Any]:
+    def update_label(
+        self,
+        owner: str,
+        repo: str,
+        name: str,
+        new_name: Optional[str] = None,
+        color: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """更新标签。
 
         Args:
@@ -82,8 +95,9 @@ class Labels(Resource):
         Returns:
             更新后的标签信息
         """
-        validate_required_params({"owner": owner, "repo": repo, "name": name},
-                               ["owner", "repo", "name"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "name": name}, ["owner", "repo", "name"]
+        )
         data = {}
         if new_name:
             data["name"] = new_name
@@ -101,6 +115,7 @@ class Labels(Resource):
             repo: 仓库名称
             name: 标签名称
         """
-        validate_required_params({"owner": owner, "repo": repo, "name": name},
-                               ["owner", "repo", "name"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "name": name}, ["owner", "repo", "name"]
+        )
         self._delete(f"/repos/{owner}/{repo}/labels/{name}")

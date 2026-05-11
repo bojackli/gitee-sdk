@@ -3,11 +3,11 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-一个功能完整、结构清晰、易于使用的Gitee API Python SDK包，使用uv进行依赖管理。
+一个面向常用 Gitee 开发协作流程、结构清晰、易于使用的 Python SDK 包，使用 uv 进行依赖管理。
 
 ## 功能特点
 
-- 完整覆盖Gitee API的所有功能
+- 覆盖仓库、Issue、Pull Request、Release 等核心开发协作 API
 - 模块化设计，结构清晰
 - 简洁易用的接口
 - 完善的错误处理
@@ -53,8 +53,12 @@ print(f"Created issue #{issue['number']}: {issue['title']}")
 ## 支持的API
 
 - 仓库管理 (Repositories)
+  - README、目录内容、文件新建/更新/删除、提交对比、blame、多文件提交
+  - 分支创建、分支保护、协作者权限查询
+  - Release CRUD 与附件列表/获取/删除/下载
 - Issues管理
 - Pull Requests
+  - 合并状态、审查/测试、审查者/测试者指派、关联 issues、标签、评论管理
 - 用户管理 (Users)
 - 组织管理 (Organizations)
 - 代码片段 (Gists)

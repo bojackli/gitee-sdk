@@ -3,7 +3,7 @@
 该模块提供了所有资源模块的基类。
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from gitee.config import DEFAULT_PAGE_SIZE
 
@@ -20,9 +20,34 @@ class Resource:
     def __init__(self, client: Any) -> None:
         self.client = client
 
+    def _require(self, **params: Any) -> None:
+        """Validate required parameters passed as keyword arguments."""
+        missing = [name for name, value in params.items() if value is None]
+        if missing:
+            from gitee.exceptions import ValidationError
+
+            raise ValidationError(f"Missing required parameters: {', '.join(missing)}")
+
+    def _params(self, **params: Any) -> Dict[str, Any]:
+        """Build query params without None values."""
+        return {key: value for key, value in params.items() if value is not None}
+
+    def _json(self, **data: Any) -> Dict[str, Any]:
+        """Build JSON body data without None values."""
+        return {key: value for key, value in data.items() if value is not None}
+
+    def _paginated(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        item_key: Optional[str] = None,
+    ) -> "PaginatedList":
+        """Create a paginated list for a resource endpoint."""
+        return PaginatedList(self.client, url, params=params, item_key=item_key)
+
     def _get(
         self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送GET请求。
 
         Args:
@@ -41,10 +66,10 @@ class Resource:
         self,
         url: str,
         params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        json: Optional[Any] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送POST请求。
 
         Args:
@@ -59,11 +84,11 @@ class Resource:
         """
         request_kwargs = {}
         if params is not None:
-            request_kwargs['params'] = params
+            request_kwargs["params"] = params
         if json is not None:
-            request_kwargs['json'] = json
+            request_kwargs["json"] = json
         if data is not None:
-            request_kwargs['data'] = data
+            request_kwargs["data"] = data
         request_kwargs.update(kwargs)
         return self.client._post(url, **request_kwargs)
 
@@ -74,7 +99,7 @@ class Resource:
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送PUT请求。
 
         Args:
@@ -98,7 +123,7 @@ class Resource:
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送PATCH请求。
 
         Args:
@@ -120,7 +145,7 @@ class Resource:
         url: str,
         params: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送DELETE请求。
 
         Args:
@@ -158,13 +183,13 @@ class PaginatedList:
         self.params = params or {}
         self.item_key = item_key
         self.current_page = 1
-        self.per_page = DEFAULT_PAGE_SIZE
+        self.per_page = self.params.get("per_page", DEFAULT_PAGE_SIZE)
         self.total_pages = None
         self.total_count = None
-        self.items = []
+        self.items: List[Dict[str, Any]] = []
 
     def get_page(
-        self, page: int = 1, per_page: int = DEFAULT_PAGE_SIZE
+        self, page: int = 1, per_page: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """获取指定页的数据。
 
@@ -175,14 +200,15 @@ class PaginatedList:
         Returns:
             当前页的数据列表
         """
+        page_size = per_page if per_page is not None else self.per_page
         params = self.params.copy()
-        params.update({"page": page, "per_page": per_page})
+        params.update({"page": page, "per_page": page_size})
 
         response = self.client.request("GET", self.url, params=params)
 
         # 更新分页信息
         self.current_page = page
-        self.per_page = per_page
+        self.per_page = page_size
 
         # 处理响应
         if self.item_key and isinstance(response, dict):

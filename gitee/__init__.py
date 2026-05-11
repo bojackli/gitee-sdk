@@ -13,11 +13,17 @@ Example:
 
 from gitee.client import GiteeClient
 from gitee.exceptions import (
-    GiteeException,
     APIError,
     AuthenticationError,
+    GiteeException,
     RateLimitExceeded,
 )
 
 __version__ = "0.1.0"
-__all__ = ["GiteeClient", "GiteeException", "APIError", "AuthenticationError", "RateLimitExceeded"]
+__all__ = [
+    "GiteeClient",
+    "GiteeException",
+    "APIError",
+    "AuthenticationError",
+    "RateLimitExceeded",
+]

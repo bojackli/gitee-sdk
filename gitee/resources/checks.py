@@ -35,9 +35,13 @@ class Checks(Resource):
         Returns:
             检查列表
         """
-        validate_required_params({"owner": owner, "repo": repo, "ref": ref}, ["owner", "repo", "ref"])
+        validate_required_params(
+            {"owner": owner, "repo": repo, "ref": ref}, ["owner", "repo", "ref"]
+        )
         params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/commits/{ref}/check-runs", params=params)
+        return self._get(
+            f"/repos/{owner}/{repo}/commits/{ref}/check-runs", params=params
+        )
 
     def get(
         self,

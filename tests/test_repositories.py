@@ -223,7 +223,9 @@ class TestRepositories:
     def test_create_commit(self, mock_client):
         repos = Repositories(mock_client)
         files = [{"path": "a.txt", "content": "A"}]
-        repos.create_commit("owner", "repo", files=files, message="batch", branch="main")
+        repos.create_commit(
+            "owner", "repo", files=files, message="batch", branch="main"
+        )
         mock_client._post.assert_called_with(
             "/repos/owner/repo/commits",
             json={"files": files, "message": "batch", "branch": "main"},
@@ -283,7 +285,9 @@ class TestRepositories:
 
     def test_update_branch_protection_rule(self, mock_client):
         repos = Repositories(mock_client)
-        repos.update_branch_protection_rule("owner", "repo", "release/*", can_push=False)
+        repos.update_branch_protection_rule(
+            "owner", "repo", "release/*", can_push=False
+        )
         mock_client.request.assert_called_with(
             "PUT",
             "/repos/owner/repo/branches/release/*/setting",
@@ -323,7 +327,9 @@ class TestRepositories:
 
     def test_create_release(self, mock_client):
         repos = Repositories(mock_client)
-        repos.create_release("owner", "repo", tag_name="v1.0.0", name="One", body="notes")
+        repos.create_release(
+            "owner", "repo", tag_name="v1.0.0", name="One", body="notes"
+        )
         mock_client._post.assert_called_with(
             "/repos/owner/repo/releases",
             json={"tag_name": "v1.0.0", "name": "One", "body": "notes"},
@@ -375,7 +381,9 @@ class TestRepositories:
     def test_get_release_attachment(self, mock_client):
         repos = Repositories(mock_client)
         repos.get_release_attachment("owner", "repo", 7, 3)
-        mock_client._get.assert_called_with("/repos/owner/repo/releases/7/attach_files/3")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/releases/7/attach_files/3"
+        )
 
     def test_delete_release_attachment(self, mock_client):
         repos = Repositories(mock_client)

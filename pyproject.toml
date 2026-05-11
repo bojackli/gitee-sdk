@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gitee-openapi"
+name = "gitee_openapi"
 version = "0.2.14"
 description = "Python SDK for Gitee API"
 readme = "README.md"
@@ -34,6 +34,7 @@ dev = [
     "black>=23.0.0",
     "isort>=5.0.0",
     "mypy>=1.0.0",
+    "types-requests>=2.31.0",
 ]
 docs = [
     "sphinx>=6.0.0",
@@ -49,6 +50,17 @@ Issues = "https://github.com/bojackli/gitee-sdk/issues"
 [tool.black]
 line-length = 88
 target-version = ["py38"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["gitee"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "gitee",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [tool.isort]
 profile = "black"

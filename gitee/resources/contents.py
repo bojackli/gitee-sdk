@@ -36,7 +36,9 @@ class Contents(Resource):
         branch: Optional[str] = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
-        self._require(owner=owner, repo=repo, path=path, content=content, message=message)
+        self._require(
+            owner=owner, repo=repo, path=path, content=content, message=message
+        )
         data = self._json(content=content, message=message, branch=branch, **kwargs)
         return self._post(f"/repos/{owner}/{repo}/contents/{path}", json=data)
 

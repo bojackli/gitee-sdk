@@ -244,7 +244,9 @@ class Repositories(Resource):
         """更新保护分支规则。"""
         return self._branches.update_protection_rule(owner, repo, wildcard, **kwargs)
 
-    def delete_branch_protection_rule(self, owner: str, repo: str, wildcard: str) -> Any:
+    def delete_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str
+    ) -> Any:
         """删除保护分支规则。"""
         return self._branches.delete_protection_rule(owner, repo, wildcard)
 
@@ -582,4 +584,6 @@ class Repositories(Resource):
         attach_file_id: Union[int, str],
     ) -> Any:
         """下载 Release 附件。"""
-        return self._releases.download_attachment(owner, repo, release_id, attach_file_id)
+        return self._releases.download_attachment(
+            owner, repo, release_id, attach_file_id
+        )

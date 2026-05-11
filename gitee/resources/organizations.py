@@ -33,7 +33,7 @@ class Organizations(Resource):
         """
         return self._get(f"/orgs/{org}")
 
-    def update_organization(self, org: str, **kwargs) -> Dict[str, Any]:
+    def update_organization(self, org: str, **kwargs: Any) -> Dict[str, Any]:
         """更新组织信息。
 
         Args:

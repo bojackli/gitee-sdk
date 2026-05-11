@@ -3,7 +3,7 @@
 该模块提供了所有资源模块的基类。
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from gitee.config import DEFAULT_PAGE_SIZE
 
@@ -47,7 +47,7 @@ class Resource:
 
     def _get(
         self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送GET请求。
 
         Args:
@@ -66,10 +66,10 @@ class Resource:
         self,
         url: str,
         params: Optional[Dict[str, Any]] = None,
-        json: Optional[Dict[str, Any]] = None,
+        json: Optional[Any] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送POST请求。
 
         Args:
@@ -99,7 +99,7 @@ class Resource:
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送PUT请求。
 
         Args:
@@ -123,7 +123,7 @@ class Resource:
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送PATCH请求。
 
         Args:
@@ -145,7 +145,7 @@ class Resource:
         url: str,
         params: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    ) -> Any:
         """发送DELETE请求。
 
         Args:
@@ -186,7 +186,7 @@ class PaginatedList:
         self.per_page = self.params.get("per_page", DEFAULT_PAGE_SIZE)
         self.total_pages = None
         self.total_count = None
-        self.items = []
+        self.items: List[Dict[str, Any]] = []
 
     def get_page(
         self, page: int = 1, per_page: Optional[int] = None

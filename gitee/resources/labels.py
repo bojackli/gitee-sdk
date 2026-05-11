@@ -3,7 +3,7 @@
 该模块提供了与Gitee仓库标签相关的API功能。
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from gitee.resources.base import Resource
 from gitee.utils import validate_required_params
@@ -45,7 +45,12 @@ class Labels(Resource):
         return self._get(f"/repos/{owner}/{repo}/labels/{name}")
 
     def create_label(
-        self, owner: str, repo: str, name: str, color: str, description: str = None
+        self,
+        owner: str,
+        repo: str,
+        name: str,
+        color: str,
+        description: Optional[str] = None,
     ) -> Dict[str, Any]:
         """创建标签。
 
@@ -73,9 +78,9 @@ class Labels(Resource):
         owner: str,
         repo: str,
         name: str,
-        new_name: str = None,
-        color: str = None,
-        description: str = None,
+        new_name: Optional[str] = None,
+        color: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Dict[str, Any]:
         """更新标签。
 

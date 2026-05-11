@@ -3,7 +3,7 @@
 该模块提供了与Gitee仓库里程碑相关的API功能。
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from gitee.resources.base import Resource
 from gitee.utils import validate_required_params
@@ -15,7 +15,9 @@ class Milestones(Resource):
     提供与Gitee仓库里程碑相关的API功能，包括获取、创建、更新和删除里程碑等操作。
     """
 
-    def list_milestones(self, owner: str, repo: str, **kwargs) -> List[Dict[str, Any]]:
+    def list_milestones(
+        self, owner: str, repo: str, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         """获取仓库的所有里程碑。
 
         Args:
@@ -51,9 +53,9 @@ class Milestones(Resource):
         owner: str,
         repo: str,
         title: str,
-        state: str = None,
-        description: str = None,
-        due_on: str = None,
+        state: Optional[str] = None,
+        description: Optional[str] = None,
+        due_on: Optional[str] = None,
     ) -> Dict[str, Any]:
         """创建里程碑。
 
@@ -85,10 +87,10 @@ class Milestones(Resource):
         owner: str,
         repo: str,
         number: int,
-        title: str = None,
-        state: str = None,
-        description: str = None,
-        due_on: str = None,
+        title: Optional[str] = None,
+        state: Optional[str] = None,
+        description: Optional[str] = None,
+        due_on: Optional[str] = None,
     ) -> Dict[str, Any]:
         """更新里程碑。
 

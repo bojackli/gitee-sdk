@@ -35,7 +35,7 @@ class Enterprises(Resource):
         validate_required_params({"enterprise": enterprise}, ["enterprise"])
         return self._get(f"/enterprises/{enterprise}")
 
-    def update(self, enterprise: str, **kwargs) -> Dict[str, Any]:
+    def update(self, enterprise: str, **kwargs: Any) -> Dict[str, Any]:
         """更新企业信息。
 
         Args:

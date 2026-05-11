@@ -216,6 +216,36 @@ class Repositories(Resource):
         """获取仓库分支详情。"""
         return self._branches.get(owner, repo, branch)
 
+    def create_branch(
+        self, owner: str, repo: str, refs: str, branch_name: str
+    ) -> Dict[str, Any]:
+        """创建仓库分支。"""
+        return self._branches.create(owner, repo, refs, branch_name)
+
+    def protect_branch(self, owner: str, repo: str, branch: str, **kwargs: Any) -> Any:
+        """设置分支保护。"""
+        return self._branches.protect(owner, repo, branch, **kwargs)
+
+    def unprotect_branch(self, owner: str, repo: str, branch: str) -> Any:
+        """取消分支保护。"""
+        return self._branches.unprotect(owner, repo, branch)
+
+    def create_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str, **kwargs: Any
+    ) -> Any:
+        """创建保护分支规则。"""
+        return self._branches.create_protection_rule(owner, repo, wildcard, **kwargs)
+
+    def update_branch_protection_rule(
+        self, owner: str, repo: str, wildcard: str, **kwargs: Any
+    ) -> Any:
+        """更新保护分支规则。"""
+        return self._branches.update_protection_rule(owner, repo, wildcard, **kwargs)
+
+    def delete_branch_protection_rule(self, owner: str, repo: str, wildcard: str) -> Any:
+        """删除保护分支规则。"""
+        return self._branches.delete_protection_rule(owner, repo, wildcard)
+
     def list_branches_paginated(
         self,
         owner: str,
@@ -248,6 +278,16 @@ class Repositories(Resource):
     def remove_collaborator(self, owner: str, repo: str, username: str) -> None:
         """移除仓库协作者。"""
         self._collaborators.remove(owner, repo, username)
+
+    def is_collaborator(self, owner: str, repo: str, username: str) -> Any:
+        """判断用户是否为仓库成员。"""
+        return self._collaborators.is_collaborator(owner, repo, username)
+
+    def get_collaborator_permission(
+        self, owner: str, repo: str, username: str
+    ) -> Dict[str, Any]:
+        """查看仓库成员权限。"""
+        return self._collaborators.get_permission(owner, repo, username)
 
     def list_commits(
         self,

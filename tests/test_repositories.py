@@ -241,3 +241,74 @@ class TestRepositories:
             "/repos/owner/repo/blame/README.md",
             params={"ref": "main"},
         )
+
+    def test_create_branch(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.create_branch("owner", "repo", refs="main", branch_name="feature")
+        mock_client._post.assert_called_with(
+            "/repos/owner/repo/branches",
+            json={"refs": "main", "branch_name": "feature"},
+        )
+
+    def test_protect_branch(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.protect_branch("owner", "repo", "main", pushers=["alice"])
+        mock_client.request.assert_called_with(
+            "PUT",
+            "/repos/owner/repo/branches/main/protection",
+            params=None,
+            json={"pushers": ["alice"]},
+            data=None,
+        )
+
+    def test_unprotect_branch(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.unprotect_branch("owner", "repo", "main")
+        mock_client.request.assert_called_with(
+            "DELETE",
+            "/repos/owner/repo/branches/main/protection",
+            params=None,
+        )
+
+    def test_create_branch_protection_rule(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.create_branch_protection_rule("owner", "repo", "release/*", can_push=True)
+        mock_client.request.assert_called_with(
+            "PUT",
+            "/repos/owner/repo/branches/setting/new",
+            params=None,
+            json={"wildcard": "release/*", "can_push": True},
+            data=None,
+        )
+
+    def test_update_branch_protection_rule(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.update_branch_protection_rule("owner", "repo", "release/*", can_push=False)
+        mock_client.request.assert_called_with(
+            "PUT",
+            "/repos/owner/repo/branches/release/*/setting",
+            params=None,
+            json={"can_push": False},
+            data=None,
+        )
+
+    def test_delete_branch_protection_rule(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.delete_branch_protection_rule("owner", "repo", "release/*")
+        mock_client.request.assert_called_with(
+            "DELETE",
+            "/repos/owner/repo/branches/release/*/setting",
+            params=None,
+        )
+
+    def test_is_collaborator(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.is_collaborator("owner", "repo", "alice")
+        mock_client._get.assert_called_with("/repos/owner/repo/collaborators/alice")
+
+    def test_get_collaborator_permission(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_collaborator_permission("owner", "repo", "alice")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/collaborators/alice/permission"
+        )

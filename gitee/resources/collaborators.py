@@ -33,3 +33,11 @@ class Collaborators(Resource):
     def remove(self, owner: str, repo: str, username: str) -> None:
         self._require(owner=owner, repo=repo, username=username)
         self._delete(f"/repos/{owner}/{repo}/collaborators/{username}")
+
+    def is_collaborator(self, owner: str, repo: str, username: str) -> Any:
+        self._require(owner=owner, repo=repo, username=username)
+        return self._get(f"/repos/{owner}/{repo}/collaborators/{username}")
+
+    def get_permission(self, owner: str, repo: str, username: str) -> Dict[str, Any]:
+        self._require(owner=owner, repo=repo, username=username)
+        return self._get(f"/repos/{owner}/{repo}/collaborators/{username}/permission")

@@ -9,6 +9,7 @@ from gitee.resources.base import PaginatedList, Resource
 from gitee.resources.branches import Branches
 from gitee.resources.collaborators import Collaborators
 from gitee.resources.commits import Commits
+from gitee.resources.contents import Contents
 from gitee.utils import filter_none_values, validate_required_params
 
 
@@ -23,6 +24,7 @@ class Repositories(Resource):
         self._branches = Branches(client)
         self._commits = Commits(client)
         self._collaborators = Collaborators(client)
+        self._contents = Contents(client)
 
     def list(
         self,
@@ -364,3 +366,87 @@ class Repositories(Resource):
         )
         params = filter_none_values({"ref": ref})
         return self._get(f"/repos/{owner}/{repo}/raw/{path}", params=params)
+
+    def get_readme(
+        self, owner: str, repo: str, ref: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取仓库 README。"""
+        return self._contents.get_readme(owner, repo, ref=ref)
+
+    def get_contents(
+        self, owner: str, repo: str, path: str = "", ref: Optional[str] = None
+    ) -> Any:
+        """获取仓库路径内容。"""
+        return self._contents.get(owner, repo, path=path, ref=ref)
+
+    def create_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        content: str,
+        message: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """在仓库中新建文件。"""
+        return self._contents.create_file(
+            owner, repo, path, content, message, branch=branch, **kwargs
+        )
+
+    def update_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        content: str,
+        message: str,
+        sha: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """更新仓库文件。"""
+        return self._contents.update_file(
+            owner, repo, path, content, message, sha, branch=branch, **kwargs
+        )
+
+    def delete_file(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        message: str,
+        sha: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """删除仓库文件。"""
+        return self._contents.delete_file(
+            owner, repo, path, message, sha, branch=branch, **kwargs
+        )
+
+    def create_commit(
+        self,
+        owner: str,
+        repo: str,
+        files: List[Dict[str, Any]],
+        message: str,
+        branch: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """提交多个文件变更。"""
+        return self._contents.create_commit(
+            owner, repo, files, message, branch=branch, **kwargs
+        )
+
+    def compare_commits(
+        self, owner: str, repo: str, base: str, head: str
+    ) -> Dict[str, Any]:
+        """对比两个提交或分支。"""
+        return self._contents.compare(owner, repo, base, head)
+
+    def get_blame(
+        self, owner: str, repo: str, path: str, ref: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """获取文件 blame 信息。"""
+        return self._contents.blame(owner, repo, path, ref=ref)

@@ -135,3 +135,109 @@ class TestRepositories:
             "/repos/owner/repo/raw/README.md",
             params={"ref": "main"},
         )
+
+    def test_get_readme(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_readme("owner", "repo", ref="main")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/readme",
+            params={"ref": "main"},
+        )
+
+    def test_get_contents_defaults_to_root(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_contents("owner", "repo")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/contents",
+            params={},
+        )
+
+    def test_get_contents_with_path_and_ref(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_contents("owner", "repo", "src/app.py", ref="main")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/contents/src/app.py",
+            params={"ref": "main"},
+        )
+
+    def test_create_file(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.create_file(
+            "owner",
+            "repo",
+            "README.md",
+            content="hello",
+            message="add readme",
+            branch="main",
+            committer_name="Alice",
+        )
+        mock_client._post.assert_called_with(
+            "/repos/owner/repo/contents/README.md",
+            json={
+                "content": "hello",
+                "message": "add readme",
+                "branch": "main",
+                "committer_name": "Alice",
+            },
+        )
+
+    def test_update_file(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.update_file(
+            "owner",
+            "repo",
+            "README.md",
+            content="hello again",
+            message="update readme",
+            sha="abc123",
+        )
+        mock_client.request.assert_called_with(
+            "PUT",
+            "/repos/owner/repo/contents/README.md",
+            params=None,
+            json={
+                "content": "hello again",
+                "message": "update readme",
+                "sha": "abc123",
+            },
+            data=None,
+        )
+
+    def test_delete_file(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.delete_file(
+            "owner",
+            "repo",
+            "README.md",
+            message="delete readme",
+            sha="abc123",
+            branch="main",
+        )
+        mock_client.request.assert_called_with(
+            "DELETE",
+            "/repos/owner/repo/contents/README.md",
+            params=None,
+            json={"message": "delete readme", "sha": "abc123", "branch": "main"},
+        )
+
+    def test_create_commit(self, mock_client):
+        repos = Repositories(mock_client)
+        files = [{"path": "a.txt", "content": "A"}]
+        repos.create_commit("owner", "repo", files=files, message="batch", branch="main")
+        mock_client._post.assert_called_with(
+            "/repos/owner/repo/commits",
+            json={"files": files, "message": "batch", "branch": "main"},
+        )
+
+    def test_compare_commits(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.compare_commits("owner", "repo", "main", "feature")
+        mock_client._get.assert_called_with("/repos/owner/repo/compare/main...feature")
+
+    def test_get_blame(self, mock_client):
+        repos = Repositories(mock_client)
+        repos.get_blame("owner", "repo", "README.md", ref="main")
+        mock_client._get.assert_called_with(
+            "/repos/owner/repo/blame/README.md",
+            params={"ref": "main"},
+        )

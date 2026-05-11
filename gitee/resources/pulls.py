@@ -60,9 +60,7 @@ class PullRequests(Resource):
         )
         return self._get(f"/repos/{owner}/{repo}/pulls", params=params)
 
-    def get(
-        self, owner: str, repo: str, number: Union[int, str]
-    ) -> Dict[str, Any]:
+    def get(self, owner: str, repo: str, number: Union[int, str]) -> Dict[str, Any]:
         """获取Pull Request详情。
 
         Args:
@@ -268,7 +266,9 @@ class PullRequests(Resource):
             ["owner", "repo", "number"],
         )
         params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/pulls/{number}/comments", params=params)
+        return self._get(
+            f"/repos/{owner}/{repo}/pulls/{number}/comments", params=params
+        )
 
     def create_comment(
         self,

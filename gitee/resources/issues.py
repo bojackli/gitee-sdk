@@ -69,9 +69,7 @@ class Issues(Resource):
 
         return self._get(url, params=params)
 
-    def get(
-        self, owner: str, repo: str, number: Union[int, str]
-    ) -> Dict[str, Any]:
+    def get(self, owner: str, repo: str, number: Union[int, str]) -> Dict[str, Any]:
         """获取Issue详情。
 
         Args:
@@ -198,7 +196,9 @@ class Issues(Resource):
             ["owner", "repo", "number"],
         )
         params = filter_none_values({"page": page, "per_page": per_page})
-        return self._get(f"/repos/{owner}/{repo}/issues/{number}/comments", params=params)
+        return self._get(
+            f"/repos/{owner}/{repo}/issues/{number}/comments", params=params
+        )
 
     def create_comment(
         self, owner: str, repo: str, number: Union[int, str], body: str
@@ -240,7 +240,9 @@ class Issues(Resource):
             ["owner", "repo", "comment_id", "body"],
         )
         data = {"body": body}
-        return self._patch(f"/repos/{owner}/{repo}/issues/comments/{comment_id}", json=data)
+        return self._patch(
+            f"/repos/{owner}/{repo}/issues/comments/{comment_id}", json=data
+        )
 
     def delete_comment(
         self, owner: str, repo: str, comment_id: Union[int, str]

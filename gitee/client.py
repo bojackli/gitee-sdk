@@ -99,7 +99,9 @@ class GiteeClient:
         session.headers.update(headers)
         return session
 
-    def _get(self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
+    def _get(
+        self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs: Any
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
         """发送GET请求。
 
         Args:
@@ -112,7 +114,14 @@ class GiteeClient:
         """
         return self.request("GET", url, params=params, **kwargs)
 
-    def _post(self, url: str, params: Optional[Dict[str, Any]] = None, json: Optional[Dict[str, Any]] = None, data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
+    def _post(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        json: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]], str, None]:
         """发送POST请求。
 
         Args:
@@ -171,7 +180,7 @@ class GiteeClient:
                 data=data,
                 json=json,
                 timeout=self.timeout,
-                **kwargs
+                **kwargs,
             )
             logger.debug(f"Response status: {response.status_code}")
             logger.debug(f"Response headers: {response.headers}")
